@@ -7,11 +7,11 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
 class BusDriverSignUpPage extends StatelessWidget {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController licenseController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController(text: "mahmoud alsharabi");
+  final TextEditingController phoneController = TextEditingController(text: "01093456789");
+  final TextEditingController licenseController = TextEditingController(text: "123456789");
+  final TextEditingController emailController = TextEditingController(text: "eng.mahmoud.alsharabi@gmail.com");
+  final TextEditingController passwordController = TextEditingController(text: "123456");
 
   BusDriverSignUpPage({super.key});
 

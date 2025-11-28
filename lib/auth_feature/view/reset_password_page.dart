@@ -16,8 +16,8 @@ class ResetPasswordPage extends StatefulWidget {
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _otpController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final _passwordController = TextEditingController(text: "1234567");
+  final _confirmPasswordController = TextEditingController(text: "1234567");
   final _formKey = GlobalKey<FormState>();
   bool _processing = false;
 

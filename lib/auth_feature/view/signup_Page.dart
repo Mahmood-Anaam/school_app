@@ -7,14 +7,14 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
 class ParentSignUpPage extends StatelessWidget {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController gradeController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController conditionController = TextEditingController();
+  final TextEditingController nameController = TextEditingController(text: "Mahmood Anaam");
+  final TextEditingController phoneController = TextEditingController(text: "01093456789");
+  final TextEditingController emailController = TextEditingController(text: "eng.mahmood.anaam@gmail.com");
+  final TextEditingController passwordController = TextEditingController(text: "123456");
+  final TextEditingController gradeController = TextEditingController(text: "5");
+  final TextEditingController ageController = TextEditingController(text: "30");
+  final TextEditingController addressController = TextEditingController(text: "Taize");
+  final TextEditingController conditionController = TextEditingController(text: "good");
 
   ParentSignUpPage({super.key});
 
