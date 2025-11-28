@@ -332,6 +332,7 @@ class _SettingPageState extends State<SettingPage> {
               Navigator.pop(context);
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
+              await Supabase.instance.client.auth.signOut();
               if (mounted) {
                 Navigator.pushAndRemoveUntil(
                     context,

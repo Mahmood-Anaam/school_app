@@ -48,6 +48,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthanticationState> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('email', event.email);
           await prefs.setString('type', 'student');
+          await supabase.auth.signInWithPassword(email: event.email, password: event.password);
+
+
           emit(Authanticated(type: 'student', userData: res));
           return;
         }
@@ -95,10 +98,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthanticationState> {
           'password': hashedPassword,
         });
 
+        await supabase.auth.signUp(email: event.email, password: event.password);
+
         final userData = await supabase.from('driver_table').select().eq('email', event.email).single();
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('email', event.email);
         await prefs.setString('type', 'driver');
+
+        await supabase.auth.signInWithPassword(email: event.email, password: event.password);
+
         emit(Authanticated(type: 'driver', userData: userData));
       } catch (e) {
         emit(AuthError(message: e.toString()));
@@ -115,6 +123,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthanticationState> {
           return;
         }
 
+
+
+
+
         // hash كلمة المرور
         final hashedPassword = sha256.convert(utf8.encode(event.password)).toString();
 
@@ -129,7 +141,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthanticationState> {
           'password': hashedPassword,
         });
 
+        await supabase.auth.signUp(email: event.email, password: event.password);
+
         final userData = await supabase.from('student_table').select().eq('email', event.email).single();
+
+        await supabase.auth.signInWithPassword(email: event.email, password: event.password);
+
+
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('email', event.email);
         await prefs.setString('type', 'student');

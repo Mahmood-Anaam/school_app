@@ -7,6 +7,8 @@ import 'package:school_app/auth_feature/view/Home_Page.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
+import 'forgot_password_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -130,6 +132,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
+
+
                       Positioned(
                         right: context.locale.languageCode == 'en' ? 12 : null,
                         left: context.locale.languageCode == 'ar' ? 12 : null,
@@ -152,6 +156,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
+
+
+
+
                   const SizedBox(height: 30),
                   // زر تسجيل الدخول
                   SizedBox(
@@ -216,6 +224,31 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                   ),
+
+                  // رابط نسيت كلمة المرور
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordPage()),
+                        );
+                      },
+                      child: Text(
+                        'forget_password'.tr(),
+                        style: const TextStyle(
+                          color: Color(0xffD7FD8C),
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ),
+
+
+
                   const SizedBox(height: 40),
                   // Divider with "or"
                   Row(

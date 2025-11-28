@@ -234,5 +234,15 @@
   "no_data_this_week": "لا توجد بيانات هذا الأسبوع",
   "attendance_days": "أيام الحضور",
   "late_days": "أيام التأخير",
-  "absent_days": "أيام الغياب"
+  "absent_days": "أيام الغياب",
+
+  "enter_email_instruction": "أدخل بريدك الإلكتروني لتلقي رمز إعادة التعيين.",
+  "send_otp": "إرسال الرمز",
+  "enter_otp_instruction": "أدخل الرمز وكلمة المرور الجديدة",
+  "otp_label": "رمز التحقق",
+  "invalid_otp_error": "رمز غير صحيح",
+  "reset_password_action": "إعادة تعيين كلمة المرور",
+  "password_updated_msg": "تم تحديث كلمة المرور بنجاح",
+  "reset_password_title": "إعادة تعيين كلمة المرور",
+  "unexpected_error": "حدث خطأ غير متوقع"
 }
