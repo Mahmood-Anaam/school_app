@@ -17,6 +17,7 @@
   "phone_number": "رقم الهاتف",
   "driver_license": "رقم رخصة القيادة",
   "email": "البريد الإلكتروني",
+  "invalid_email": "يرجى إدخال بريد إلكتروني صالح",
   "password": "كلمة المرور",
   "register": "تسجيل",
   "already_registered": "هل لديك حساب بالفعل؟",
