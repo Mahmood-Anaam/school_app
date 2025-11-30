@@ -1,4 +1,3 @@
-// lib/auth_feature/view/verification_otp_page.dart
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +15,8 @@ class VerificationOtpPage extends StatefulWidget {
 }
 
 class _VerificationOtpPageState extends State<VerificationOtpPage> {
-  final List<TextEditingController> _controllers = List.generate(
-    8,
-    (index) => TextEditingController(),
-  );
-  final List<FocusNode> _focusNodes = List.generate(8, (index) => FocusNode());
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   bool _processing = false;
   static const int _initialCooldown = 60;
@@ -37,12 +33,8 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
+    _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -108,7 +100,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
   }
 
   Future<void> _verifyOtp() async {
-    final otp = _controllers.map((c) => c.text).join();
+    final otp = _controller.text.trim();
     if (otp.length != 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -261,60 +253,46 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
 
                 const SizedBox(height: 40),
 
-                // OTP Input Boxes
+                // Single OTP Input Field
                 Directionality(
                   textDirection: ui.TextDirection.ltr,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 12,
-                    children: List.generate(8, (index) {
-                      return SizedBox(
-                        width: 45,
-                        height: 60,
-                        child: TextFormField(
-                          controller: _controllers[index],
-                          focusNode: _focusNodes[index],
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          maxLength: 1,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: TextFormField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      maxLength: 8,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        counterText: '',
+                        filled: true,
+                        fillColor: const Color(0xff135FCB),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 2,
                           ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          decoration: InputDecoration(
-                            counterText: '',
-                            filled: true,
-                            fillColor: const Color(0xff135FCB),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xffD7FD8C),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Color(0xffD7FD8C),
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onChanged: (value) {
-                            if (value.length == 1 && index < 7) {
-                              _focusNodes[index + 1].requestFocus();
-                            } else if (value.isEmpty && index > 0) {
-                              _focusNodes[index - 1].requestFocus();
-                            }
-                          },
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    }),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 3,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: '•••• ••••',
+                        hintStyle: TextStyle(color: Colors.white54),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -387,7 +365,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                     TextButton(
                       onPressed: _canResend ? _resendOtp : null,
                       child: Text(
-                        _canResend ? 'resend_otp'.tr() : '${'resend_in'.tr()} $_remaining ${isRTL ? 'ثانية' : 'second'}',
+                        _canResend
+                            ? 'resend_otp'.tr()
+                            : '${'resend_in'.tr()} $_remaining ${isRTL ? 'ثانية' : 'second'}',
                         style: TextStyle(
                           color: _canResend
                               ? const Color(0xffD7FD8C)
