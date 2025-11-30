@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'reset_password_page.dart';
+import 'dart:ui' as ui;
 
 class VerificationOtpPage extends StatefulWidget {
   final String email;
@@ -20,7 +21,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
     (index) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(8, (index) => FocusNode());
-  
+
   bool _processing = false;
   static const int _initialCooldown = 60;
   int _remaining = _initialCooldown;
@@ -80,7 +81,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       _startCooldown();
@@ -96,7 +99,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
           ),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -116,7 +121,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
           ),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       return;
@@ -137,7 +144,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
 
@@ -160,7 +169,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
           ),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } finally {
@@ -251,57 +262,60 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                 const SizedBox(height: 40),
 
                 // OTP Input Boxes
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 8,
-                  runSpacing: 12,
-                  children: List.generate(8, (index) {
-                    return Container(
-                      width: 45,
-                      height: 60,
-                      child: TextFormField(
-                        controller: _controllers[index],
-                        focusNode: _focusNodes[index],
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        maxLength: 1,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(
-                          counterText: '',
-                          filled: true,
-                          fillColor: const Color(0xff135FCB),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Color(0xffD7FD8C),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                Directionality(
+                  textDirection: ui.TextDirection.ltr,
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 12,
+                    children: List.generate(8, (index) {
+                      return SizedBox(
+                        width: 45,
+                        height: 60,
+                        child: TextFormField(
+                          controller: _controllers[index],
+                          focusNode: _focusNodes[index],
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          maxLength: 1,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Color(0xffD7FD8C),
-                              width: 3,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            counterText: '',
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          onChanged: (value) {
+                            if (value.length == 1 && index < 7) {
+                              _focusNodes[index + 1].requestFocus();
+                            } else if (value.isEmpty && index > 0) {
+                              _focusNodes[index - 1].requestFocus();
+                            }
+                          },
                         ),
-                        onChanged: (value) {
-                          if (value.length == 1 && index < 7) {
-                            _focusNodes[index + 1].requestFocus();
-                          } else if (value.isEmpty && index > 0) {
-                            _focusNodes[index - 1].requestFocus();
-                          }
-                        },
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
 
                 const SizedBox(height: 32),
@@ -315,7 +329,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff135FCB),
                       foregroundColor: const Color(0xffD7FD8C),
-                      disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                      disabledBackgroundColor: const Color(
+                        0xff135FCB,
+                      ).withOpacity(0.6),
                       elevation: 8,
                       shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
                       shape: RoundedRectangleBorder(
@@ -353,6 +369,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                 // Resend OTP
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  textDirection: isRTL
+                      ? ui.TextDirection.rtl
+                      : ui.TextDirection.ltr,
                   children: [
                     Text(
                       'didnt_receive_otp'.tr(),
@@ -360,14 +379,15 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 15,
                       ),
+                      textDirection: isRTL
+                          ? ui.TextDirection.rtl
+                          : ui.TextDirection.ltr,
                     ),
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: _canResend ? _resendOtp : null,
                       child: Text(
-                        _canResend
-                            ? 'resend_otp'.tr()
-                            : 'resend_in'.tr(args: ['$_remaining']),
+                        _canResend ? 'resend_otp'.tr() : '${'resend_in'.tr()} $_remaining ${isRTL ? 'ثانية' : 'second'}',
                         style: TextStyle(
                           color: _canResend
                               ? const Color(0xffD7FD8C)
@@ -375,6 +395,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
+                        textDirection: isRTL
+                            ? ui.TextDirection.rtl
+                            : ui.TextDirection.ltr,
                       ),
                     ),
                   ],
@@ -393,6 +416,9 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                       fontSize: 13,
                       height: 1.5,
                     ),
+                    textDirection: isRTL
+                        ? ui.TextDirection.rtl
+                        : ui.TextDirection.ltr,
                   ),
                 ),
               ],

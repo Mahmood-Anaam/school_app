@@ -183,7 +183,7 @@
   "otp_sent": "OTP sent to your email",
   "didnt_receive_otp": "Didn't receive the code?",
   "resend_otp": "Resend",
-  "resend_in": "Resend in {0}s",
+  "resend_in": "Resend in ",
   "otp_help_note": "Check your email for the verification code. It may take a few moments to arrive.",
   "enter_new_password_instruction": "Enter and confirm your new password",
   "reset_password_action": "Reset Password",

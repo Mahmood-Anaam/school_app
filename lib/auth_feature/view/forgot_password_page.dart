@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:school_app/auth_feature/view/verification_otp_page.dart';
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
+import 'dart:ui' as ui;
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -26,12 +27,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
-    
+
     try {
       await SupabaseAuth().sendOtp(_emailController.text.trim());
 
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -43,7 +44,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
 
@@ -67,7 +70,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } finally {
@@ -81,17 +86,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xff377FCC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            isRTL ? Icons.arrow_forward : Icons.arrow_back,
-            color: const Color(0xffD7FD8C),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -139,6 +134,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       letterSpacing: 0.5,
                     ),
                     textAlign: TextAlign.center,
+                    textDirection: isRTL
+                        ? ui.TextDirection.rtl
+                        : ui.TextDirection.ltr,
                   ),
 
                   const SizedBox(height: 16),
@@ -149,10 +147,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     child: Text(
                       'enter_email_instruction'.tr(),
                       textAlign: TextAlign.center,
+                      textDirection: isRTL
+                          ? ui.TextDirection.rtl
+                          : ui.TextDirection.ltr,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.9),
                         height: 1.5,
+                        
                       ),
                     ),
                   ),
@@ -160,11 +162,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   const SizedBox(height: 40),
 
                   // Email Field
-                  TextFormField(
+                  Directionality(
+                    textDirection: isRTL
+                        ? ui.TextDirection.rtl
+                        : ui.TextDirection.ltr,
+                    child: TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(color: Colors.white, fontSize: 16),
-                      // textDirection: TextDirection.ltr,
+                      textDirection: ui.TextDirection.ltr,
                       decoration: InputDecoration(
                         labelText: 'email'.tr(),
                         labelStyle: const TextStyle(
@@ -220,6 +226,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         return null;
                       },
                     ),
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -232,7 +239,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff135FCB),
                         foregroundColor: const Color(0xffD7FD8C),
-                        disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                        disabledBackgroundColor: const Color(
+                          0xff135FCB,
+                        ).withOpacity(0.6),
                         elevation: 8,
                         shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
                         shape: RoundedRectangleBorder(
@@ -257,7 +266,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.send, size: 20),
+                                Icon(Icons.send, size: 20,
+                                textDirection: isRTL
+                                    ? ui.TextDirection.rtl
+                                    : ui.TextDirection.ltr,
+                                ),
                                 const SizedBox(width: 12),
                                 Text(
                                   'send_otp'.tr(),
@@ -280,12 +293,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          isRTL ? Icons.arrow_forward : Icons.arrow_back,
-                          color: const Color(0xffD7FD8C),
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
                           'login'.tr(),
                           style: const TextStyle(

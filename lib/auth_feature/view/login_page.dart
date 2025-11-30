@@ -5,6 +5,7 @@ import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/welcome.dart';
 import 'package:school_app/auth_feature/view/Home_Page.dart';
 import 'package:school_app/auth_feature/view/forgot_password_page.dart';
+import 'dart:ui' as ui;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,11 +14,12 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _obscurePassword = true;
   bool _loading = false;
   late AnimationController _animationController;
@@ -31,16 +33,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+
     _animationController.forward();
   }
 
@@ -59,13 +61,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     final password = _passwordController.text;
 
     setState(() => _loading = true);
-    
+
     try {
       final res = await SupabaseAuth().signInWithEmailPassword(email, password);
 
       if ((res.user != null) || (res.session != null)) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -77,7 +79,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -85,10 +89,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const HomePage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
           ),
         );
       } else {
@@ -121,7 +127,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final isRTL = context.locale.languageCode == 'ar';
-    
+
     return Scaffold(
       backgroundColor: const Color(0xff377FCC),
       body: SafeArea(
@@ -143,27 +149,18 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         child: Container(
                           width: 140,
                           height: 140,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xffD7FD8C).withOpacity(0.3),
-                                blurRadius: 30,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
+                          decoration: BoxDecoration(shape: BoxShape.circle),
                           child: ClipOval(
                             child: Image.asset(
-                              "assets/images/1.png",
-                              fit: BoxFit.cover,
+                              'assets/images/shcool_logo.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // App Title
                       Text(
                         "Hafelty+",
@@ -181,162 +178,169 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ],
                         ),
                       ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      Text(
-                        'login'.tr(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white.withOpacity(0.9),
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      
+
+
                       const SizedBox(height: 40),
-                      
+
                       // Email Field
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                        textAlign: isRTL ? TextAlign.right : TextAlign.left,
-                        decoration: InputDecoration(
-                          labelText: 'email'.tr(),
-                          labelStyle: const TextStyle(
-                            color: Color(0xffD7FD8C),
+                      Directionality(
+                        textDirection: isRTL
+                            ? ui.TextDirection.rtl
+                            : ui.TextDirection.ltr,
+                        child: TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(
+                            color: Colors.white,
                             fontSize: 16,
                           ),
-                          prefixIcon: const Icon(
-                            Icons.email_outlined,
-                            color: Color(0xffD7FD8C),
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xff135FCB),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
+                          textDirection: ui.TextDirection.ltr,
+                          decoration: InputDecoration(
+                            labelText: 'email'.tr(),
+                            labelStyle: const TextStyle(
                               color: Color(0xffD7FD8C),
-                              width: 1.5,
+                              fontSize: 16,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
+                            prefixIcon: const Icon(
+                              Icons.email_outlined,
                               color: Color(0xffD7FD8C),
-                              width: 2.5,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.redAccent,
-                              width: 1.5,
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.redAccent,
-                              width: 2.5,
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'required'.tr();
+                            }
+                            if (!value.contains('@')) {
+                              return 'valid_phone_required'.tr();
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'required'.tr();
-                          }
-                          if (!value.contains('@')) {
-                            return 'valid_phone_required'.tr();
-                          }
-                          return null;
-                        },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Password Field
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                        textAlign: isRTL ? TextAlign.right : TextAlign.left,
-                        decoration: InputDecoration(
-                          labelText: 'password'.tr(),
-                          labelStyle: const TextStyle(
-                            color: Color(0xffD7FD8C),
+                      Directionality(
+                        textDirection: isRTL
+                            ? ui.TextDirection.rtl
+                            : ui.TextDirection.ltr,
+                        child: TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          style: const TextStyle(
+                            color: Colors.white,
                             fontSize: 16,
                           ),
-                          prefixIcon: const Icon(
-                            Icons.lock_outline,
-                            color: Color(0xffD7FD8C),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: const Color(0xffD7FD8C),
-                            ),
-                            onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
-                            },
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xff135FCB),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
+                          decoration: InputDecoration(
+                            labelText: 'password'.tr(),
+                            labelStyle: const TextStyle(
                               color: Color(0xffD7FD8C),
-                              width: 1.5,
+                              fontSize: 16,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
                               color: Color(0xffD7FD8C),
-                              width: 2.5,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.redAccent,
-                              width: 1.5,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: const Color(0xffD7FD8C),
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.redAccent,
-                              width: 2.5,
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.redAccent,
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'required'.tr();
+                            }
+                            if (value.length < 6) {
+                              return 'password_min_6'.tr();
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'required'.tr();
-                          }
-                          if (value.length < 6) {
-                            return 'password_min_6'.tr();
-                          }
-                          return null;
-                        },
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Forgot Password Link
                       Align(
-                        alignment: isRTL ? Alignment.centerLeft : Alignment.centerRight,
+                        alignment: Alignment.center,
                         child: TextButton(
                           onPressed: () {
                             Navigator.push(
@@ -348,6 +352,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           },
                           child: Text(
                             'forget_password'.tr(),
+                            textDirection: isRTL
+                                ? ui.TextDirection.rtl
+                                : ui.TextDirection.ltr,
                             style: const TextStyle(
                               color: Color(0xffD7FD8C),
                               fontSize: 14,
@@ -356,9 +363,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Login Button
                       SizedBox(
                         width: double.infinity,
@@ -368,9 +375,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xff135FCB),
                             foregroundColor: const Color(0xffD7FD8C),
-                            disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                            disabledBackgroundColor: const Color(
+                              0xff135FCB,
+                            ).withOpacity(0.6),
                             elevation: 8,
-                            shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
+                            shadowColor: const Color(
+                              0xffD7FD8C,
+                            ).withOpacity(0.4),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                               side: const BorderSide(
@@ -400,9 +411,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Divider with "OR"
                       Row(
                         children: [
@@ -431,9 +442,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Sign Up Button
                       SizedBox(
                         width: double.infinity,
@@ -442,7 +453,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const Welcome()),
+                              MaterialPageRoute(
+                                builder: (_) => const Welcome(),
+                              ),
                             );
                           },
                           style: OutlinedButton.styleFrom(
@@ -465,7 +478,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
                     ],
                   ),

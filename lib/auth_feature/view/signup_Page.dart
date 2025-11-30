@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/Home_Page.dart';
+import 'dart:ui' as ui;
+
+import 'package:school_app/auth_feature/view/login_page.dart';
 
 class ParentSignUpPage extends StatefulWidget {
   const ParentSignUpPage({super.key});
@@ -82,7 +85,9 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
 
@@ -103,7 +108,9 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
           ),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } finally {
@@ -117,25 +124,7 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xff377FCC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            isRTL ? Icons.arrow_forward : Icons.arrow_back,
-            color: const Color(0xffD7FD8C),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'student_button'.tr(),
-          style: const TextStyle(
-            color: Color(0xffD7FD8C),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -147,22 +136,13 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                 Hero(
                   tag: 'app_logo',
                   child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xffD7FD8C).withOpacity(0.3),
-                          blurRadius: 20,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                    ),
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(shape: BoxShape.circle),
                     child: ClipOval(
                       child: Image.asset(
                         'assets/images/shcool_logo.png',
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -193,6 +173,7 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   isRTL: isRTL,
+                  textDirection: ui.TextDirection.ltr,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'valid_phone_required'.tr();
@@ -210,6 +191,7 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   isRTL: isRTL,
+                  textDirection: ui.TextDirection.ltr,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'required'.tr();
@@ -224,75 +206,80 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                 const SizedBox(height: 16),
 
                 // Password
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: _obscurePassword,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'password'.tr(),
-                    labelStyle: const TextStyle(
-                      color: Color(0xffD7FD8C),
-                      fontSize: 16,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      color: Color(0xffD7FD8C),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: const Color(0xffD7FD8C),
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xff135FCB),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
+                Directionality(
+                  textDirection: isRTL
+                      ? ui.TextDirection.rtl
+                      : ui.TextDirection.ltr,
+                  child: TextFormField(
+                    controller: passwordController,
+                    obscureText: _obscurePassword,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'password'.tr(),
+                      labelStyle: const TextStyle(
                         color: Color(0xffD7FD8C),
-                        width: 1.5,
+                        fontSize: 16,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
                         color: Color(0xffD7FD8C),
-                        width: 2.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.redAccent,
-                        width: 1.5,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: const Color(0xffD7FD8C),
+                        ),
+                        onPressed: () {
+                          setState(() => _obscurePassword = !_obscurePassword);
+                        },
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.redAccent,
-                        width: 2.5,
+                      filled: true,
+                      fillColor: const Color(0xff135FCB),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xffD7FD8C),
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Color(0xffD7FD8C),
+                          width: 2.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.redAccent,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.redAccent,
+                          width: 2.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 18,
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 18,
-                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'required'.tr();
+                      }
+                      if (value.length < 6) {
+                        return 'password_min_6'.tr();
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'required'.tr();
-                    }
-                    if (value.length < 6) {
-                      return 'password_min_6'.tr();
-                    }
-                    return null;
-                  },
                 ),
 
                 const SizedBox(height: 16),
@@ -371,7 +358,9 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff135FCB),
                       foregroundColor: const Color(0xffD7FD8C),
-                      disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                      disabledBackgroundColor: const Color(
+                        0xff135FCB,
+                      ).withOpacity(0.6),
                       elevation: 8,
                       shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
                       shape: RoundedRectangleBorder(
@@ -409,17 +398,24 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                 // Login Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  textDirection: isRTL
+                      ? ui.TextDirection.rtl
+                      : ui.TextDirection.ltr,
                   children: [
                     Text(
                       'already_registered'.tr(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      textDirection: isRTL
+                          ? ui.TextDirection.rtl
+                          : ui.TextDirection.ltr,
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      ),
                       child: Text(
                         'login_here'.tr(),
                         style: const TextStyle(
@@ -428,6 +424,9 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
                           fontSize: 15,
                           decoration: TextDecoration.underline,
                         ),
+                        textDirection: isRTL
+                            ? ui.TextDirection.rtl
+                            : ui.TextDirection.ltr,
                       ),
                     ),
                   ],
@@ -448,59 +447,45 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
     required IconData icon,
     required bool isRTL,
     TextInputType keyboardType = TextInputType.text,
-    TextDirection? textDirection,
+    ui.TextDirection? textDirection,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(
-          color: Color(0xffD7FD8C),
-          fontSize: 16,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: const Color(0xffD7FD8C),
-        ),
-        filled: true,
-        fillColor: const Color(0xff135FCB),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xffD7FD8C),
-            width: 1.5,
+    return Directionality(
+      textDirection: isRTL ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        textDirection: textDirection,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Color(0xffD7FD8C), fontSize: 16),
+          prefixIcon: Icon(icon, color: const Color(0xffD7FD8C)),
+          filled: true,
+          fillColor: const Color(0xff135FCB),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 1.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xffD7FD8C),
-            width: 2.5,
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 1.5,
+          errorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 2.5,
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.redAccent, width: 2.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
+        validator: validator,
       ),
-      validator: validator,
     );
   }
 }

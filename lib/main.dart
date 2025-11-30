@@ -9,6 +9,8 @@ import 'auth_feature/view/login_page.dart';
 import 'auth_feature/view/map_notifier.dart';
 import 'providers/app_settings_provider.dart';
 
+
+
 /// Entry point for the application.
 /// Initializes localization and Supabase, then runs the app.
 void main() async {
@@ -21,7 +23,7 @@ void main() async {
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      fallbackLocale: const Locale('ar'),
       saveLocale: true,
       child: const MyApp(),
     ),
@@ -65,6 +67,8 @@ class MyApp extends StatelessWidget {
 
             // Light theme
             theme: ThemeData(
+              
+              
               brightness: Brightness.light,
               scaffoldBackgroundColor: primaryBlue,
               primaryColor: primaryBlue,
@@ -82,6 +86,7 @@ class MyApp extends StatelessWidget {
                 iconTheme: IconThemeData(color: neonGreen),
               ),
               textTheme: const TextTheme(
+
                 bodyLarge: TextStyle(color: Colors.white),
               ),
               iconTheme: const IconThemeData(color: neonGreen),
@@ -150,7 +155,7 @@ class MyApp extends StatelessWidget {
                 // Try to get session from stream payload, otherwise use current session.
                 final session =
                     snapshot.data?.session ?? supabase.auth.currentSession;
-
+            
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(
                     body: Center(
@@ -160,11 +165,11 @@ class MyApp extends StatelessWidget {
                     ),
                   );
                 }
-
+            
                 if (session != null) {
                   return const HomePage();
                 }
-
+            
                 return const LoginPage();
               },
             ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/login_page.dart';
+import 'dart:ui' as ui;
 
 class ResetPasswordPage extends StatefulWidget {
   final String email;
@@ -31,12 +32,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _processing = true);
-    
+
     try {
       await SupabaseAuth().updatePassword(_passwordController.text);
 
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -48,10 +49,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
-      
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -70,7 +73,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } finally {
@@ -157,138 +162,152 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   const SizedBox(height: 40),
 
                   // New Password Field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    decoration: InputDecoration(
-                      labelText: 'new_password'.tr(),
-                      labelStyle: const TextStyle(
-                        color: Color(0xffD7FD8C),
-                        fontSize: 16,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xffD7FD8C),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: const Color(0xffD7FD8C),
-                        ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
+                  Directionality(
+                    textDirection: isRTL
+                        ? ui.TextDirection.rtl
+                        : ui.TextDirection.ltr,
+                    child: TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        labelText: 'new_password'.tr(),
+                        labelStyle: const TextStyle(
                           color: Color(0xffD7FD8C),
-                          width: 1.5,
+                          fontSize: 16,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
                           color: Color(0xffD7FD8C),
-                          width: 2.5,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 1.5,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xffD7FD8C),
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            );
+                          },
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 2.5,
+                        filled: true,
+                        fillColor: const Color(0xff135FCB),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 18,
-                      ),
+                      validator: (v) => v != null && v.length >= 6
+                          ? null
+                          : 'password_min_6'.tr(),
                     ),
-                    validator: (v) => v != null && v.length >= 6
-                        ? null
-                        : 'password_min_6'.tr(),
                   ),
 
                   const SizedBox(height: 20),
 
                   // Confirm Password Field
-                  TextFormField(
-                    controller: _confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    decoration: InputDecoration(
-                      labelText: 'confirm_new_password'.tr(),
-                      labelStyle: const TextStyle(
-                        color: Color(0xffD7FD8C),
-                        fontSize: 16,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xffD7FD8C),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: const Color(0xffD7FD8C),
-                        ),
-                        onPressed: () {
-                          setState(() =>
-                              _obscureConfirmPassword = !_obscureConfirmPassword);
-                        },
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
+                  Directionality(
+                    textDirection: isRTL
+                        ? ui.TextDirection.rtl
+                        : ui.TextDirection.ltr,
+                    child: TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        labelText: 'confirm_new_password'.tr(),
+                        labelStyle: const TextStyle(
                           color: Color(0xffD7FD8C),
-                          width: 1.5,
+                          fontSize: 16,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
                           color: Color(0xffD7FD8C),
-                          width: 2.5,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 1.5,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xffD7FD8C),
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            );
+                          },
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.redAccent,
-                          width: 2.5,
+                        filled: true,
+                        fillColor: const Color(0xff135FCB),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Color(0xffD7FD8C),
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.redAccent,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 18,
-                      ),
+                      validator: (v) => v == _passwordController.text
+                          ? null
+                          : 'passwords_not_match'.tr(),
                     ),
-                    validator: (v) => v == _passwordController.text
-                        ? null
-                        : 'passwords_not_match'.tr(),
                   ),
 
                   const SizedBox(height: 40),
@@ -302,7 +321,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff135FCB),
                         foregroundColor: const Color(0xffD7FD8C),
-                        disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                        disabledBackgroundColor: const Color(
+                          0xff135FCB,
+                        ).withOpacity(0.6),
                         elevation: 8,
                         shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
                         shape: RoundedRectangleBorder(
@@ -360,7 +381,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              isRTL ? 'متطلبات كلمة المرور' : 'Password Requirements',
+                              isRTL
+                                  ? 'متطلبات كلمة المرور'
+                                  : 'Password Requirements',
                               style: const TextStyle(
                                 color: Color(0xffD7FD8C),
                                 fontSize: 15,
