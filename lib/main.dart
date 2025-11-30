@@ -1,18 +1,16 @@
-// main.dart
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'auth_feature/bloc/bloc/auth_bloc.dart';
 import 'auth_feature/service/supabase_service.dart';
 import 'auth_feature/view/Home_Page.dart';
 import 'auth_feature/view/login_page.dart';
 import 'auth_feature/view/map_notifier.dart';
-import 'providers/app_settings_provider.dart'; // ملف الـ Provider الجديد
+import 'providers/app_settings_provider.dart';
 
+/// Entry point for the application.
+/// Initializes localization and Supabase, then runs the app.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -23,7 +21,7 @@ void main() async {
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
       path: 'assets/translations',
-      fallbackLocale: const Locale('ar'),
+      fallbackLocale: const Locale('en'),
       saveLocale: true,
       child: const MyApp(),
     ),
@@ -33,7 +31,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // ألوان التطبيق الثابتة
+  // Application fixed colors
   static const Color primaryBlue = Color(0xff135FCB);
   static const Color neonGreen = Color(0xffD7FD8C);
 
@@ -43,85 +41,131 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        // إدارة الثيم واللغة بدون إعادة تشغيل التطبيق
+        // App settings provider (theme & language without restart)
         ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
 
-        // Map Notifier
+        // Map-related state notifier
         ChangeNotifierProvider(create: (_) => MapNotifier()),
-
-        // Auth Bloc
-        BlocProvider(
-          create: (_) => AuthBloc(supabase: supabase)..add(ChecAuthanticated()),
-        ),
       ],
       child: Consumer<AppSettingsProvider>(
         builder: (context, settings, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: "School App",
+            title: 'School App',
 
-            // اللغة تتغير فوراً
+            // Localization settings (language updates immediately)
             locale: settings.locale,
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
-            localeResolutionCallback: (deviceLocale, supportedLocales) => settings.locale,
+            localeResolutionCallback: (deviceLocale, supportedLocales) =>
+                settings.locale,
 
-            // الثيم يتغير فوراً
+            // Theme mode (switches immediately)
             themeMode: settings.isDark ? ThemeMode.dark : ThemeMode.light,
 
-            // ثيم النهار
+            // Light theme
             theme: ThemeData(
               brightness: Brightness.light,
               scaffoldBackgroundColor: primaryBlue,
               primaryColor: primaryBlue,
-              colorScheme: const ColorScheme.light(primary: primaryBlue, secondary: neonGreen),
+              colorScheme: const ColorScheme.light(
+                primary: primaryBlue,
+                secondary: neonGreen,
+              ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: primaryBlue,
-                titleTextStyle: TextStyle(color: neonGreen, fontSize: 20, fontWeight: FontWeight.bold),
+                titleTextStyle: TextStyle(
+                  color: neonGreen,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
                 iconTheme: IconThemeData(color: neonGreen),
               ),
-              textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.white)),
+              textTheme: const TextTheme(
+                bodyLarge: TextStyle(color: Colors.white),
+              ),
               iconTheme: const IconThemeData(color: neonGreen),
               inputDecorationTheme: InputDecorationTheme(
                 labelStyle: const TextStyle(color: neonGreen),
                 filled: true,
                 fillColor: primaryBlue,
-                enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: neonGreen), borderRadius: BorderRadius.circular(8)),
-                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: neonGreen, width: 2), borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: neonGreen),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: neonGreen, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
 
-            // ثيم الليل
+            // Dark theme
             darkTheme: ThemeData(
               brightness: Brightness.dark,
               scaffoldBackgroundColor: const Color(0xff0A192F),
               primaryColor: const Color(0xff64FFDA),
-              colorScheme: const ColorScheme.dark(primary: Color(0xff64FFDA), secondary: Color(0xff8892B0), surface: Color(0xff112240)),
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xff64FFDA),
+                secondary: Color(0xff8892B0),
+                surface: Color(0xff112240),
+              ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Color(0xff112240),
-                titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                titleTextStyle: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
                 iconTheme: IconThemeData(color: Colors.white),
               ),
-              textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.white)),
+              textTheme: const TextTheme(
+                bodyLarge: TextStyle(color: Colors.white),
+              ),
               iconTheme: const IconThemeData(color: Color(0xff64FFDA)),
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
                 fillColor: const Color(0xff112240),
                 labelStyle: const TextStyle(color: Color(0xff64FFDA)),
-                enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xff64FFDA)), borderRadius: BorderRadius.circular(8)),
-                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xff64FFDA), width: 2), borderRadius: BorderRadius.circular(8)),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xff64FFDA)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: Color(0xff64FFDA),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
 
-            home: BlocBuilder<AuthBloc, AuthanticationState>(
-              builder: (context, state) {
-                if (state is AuthLoding || state is AuthInitial) {
-                  return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xffD7FD8C))));
-                } else if (state is Authanticated) {
-                  return const HomePage();
-                } else {
-                  return const LoginPage();
+            // Use Supabase auth state stream to decide initial page.
+            // Shows loading while waiting for stream, then HomePage when
+            // a session exists, otherwise LoginPage.
+            home: StreamBuilder<AuthState>(
+              stream: supabase.auth.onAuthStateChange,
+              builder: (context, snapshot) {
+                // Try to get session from stream payload, otherwise use current session.
+                final session =
+                    snapshot.data?.session ?? supabase.auth.currentSession;
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xffD7FD8C),
+                      ),
+                    ),
+                  );
                 }
+
+                if (session != null) {
+                  return const HomePage();
+                }
+
+                return const LoginPage();
               },
             ),
           );

@@ -2,11 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:school_app/auth_feature/view/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/change_password_page.dart' as cp;
 import 'package:school_app/auth_feature/view/edit_profile.dart' as ep;
-import 'package:school_app/auth_feature/view/login_page.dart';
 import 'package:school_app/auth_feature/view/privacy_page.dart';
 import 'package:school_app/providers/app_settings_provider.dart';
 
@@ -22,7 +23,6 @@ class _SettingPageState extends State<SettingPage> {
   String userEmail = "";
   bool _isLoadingUser = true;
   int? _userId;
-  String _userType = 'student';
 
   @override
   void initState() {
@@ -32,20 +32,20 @@ class _SettingPageState extends State<SettingPage> {
 
   Future<void> _loadUserData() async {
     setState(() => _isLoadingUser = true);
-
     final prefs = await SharedPreferences.getInstance();
 
-    final email = prefs.getString('email');
-    final type = prefs.getString('type') ?? 'student';
-    final userId = prefs.getInt('userId');
+    // Use SupabaseAuth singleton to get the currently authenticated user
+    final currentUser = await SupabaseAuth().getCurrentUser();
 
-    if (email == null) {
-      setState(() => _isLoadingUser = false);
+    if (currentUser == null || currentUser.email == null) {
+      if (mounted) setState(() => _isLoadingUser = false);
       return;
     }
 
-    _userType = type;
-    _userId = userId;
+    final email = currentUser.email!;
+    final metadata = currentUser.userMetadata ?? <String, dynamic>{};
+    final type = (metadata['type'] as String?) ?? 'student';
+
     final table = type == 'driver' ? 'driver_table' : 'student_table';
 
     try {
@@ -62,6 +62,7 @@ class _SettingPageState extends State<SettingPage> {
         userEmail = (response['email'] as String?) ?? email;
         _userId = response['id'] != null ? (response['id'] as int) : null;
 
+        // cache some basic info in prefs for other parts of the app that may use it
         await prefs.setString('userName', userName);
         await prefs.setString('userEmail', userEmail);
         await prefs.setString('type', type);
@@ -111,30 +112,39 @@ class _SettingPageState extends State<SettingPage> {
                   child: Text(
                     _isLoadingUser
                         ? "?"
-                        : (userName.isNotEmpty ? userName[0].toUpperCase() : "?"),
+                        : (userName.isNotEmpty
+                              ? userName[0].toUpperCase()
+                              : "?"),
                     style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87),
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isLoadingUser ? "جاري التحميل..." : userName,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _isLoadingUser ? "جاري التحميل..." : userName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 4),
-                        Text(userEmail,
-                            style: const TextStyle(
-                                color: Color(0xffD7FD8C), fontSize: 14)),
-                      ]),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        userEmail,
+                        style: const TextStyle(
+                          color: Color(0xffD7FD8C),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -165,7 +175,10 @@ class _SettingPageState extends State<SettingPage> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xffD7FD8C), width: 1.8),
+                  border: Border.all(
+                    color: const Color(0xffD7FD8C),
+                    width: 1.8,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: SwitchListTile(
@@ -175,8 +188,10 @@ class _SettingPageState extends State<SettingPage> {
                   activeTrackColor: const Color(0xffD7FD8C).withOpacity(0.6),
                   inactiveThumbColor: const Color(0xffD7FD8C),
                   inactiveTrackColor: const Color(0xffD7FD8C).withOpacity(0.3),
-                  title: Text('dark_mode'.tr(),
-                      style: const TextStyle(color: Colors.white, fontSize: 16)),
+                  title: Text(
+                    'dark_mode'.tr(),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ),
               );
             },
@@ -237,48 +252,67 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildSectionTitle(String title) => Padding(
     padding: const EdgeInsets.only(bottom: 10),
-    child: Text(title,
-        style: const TextStyle(
-            color: Color(0xffD7FD8C),
-            fontSize: 18,
-            fontWeight: FontWeight.bold)),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: Color(0xffD7FD8C),
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
   );
 
   Widget _buildSettingItem(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        String? subtitle,
-        bool isLogout = false,
-        Widget? targetPage,
-        VoidCallback? onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    bool isLogout = false,
+    Widget? targetPage,
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         border: Border.all(
-            color: isLogout ? Colors.redAccent : const Color(0xffD7FD8C),
-            width: 1.8),
+          color: isLogout ? Colors.redAccent : const Color(0xffD7FD8C),
+          width: 1.8,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon,
-            color: isLogout ? Colors.redAccent : const Color(0xffD7FD8C)),
-        title: Text(title,
-            style: TextStyle(
-                color: isLogout ? Colors.redAccent : Colors.white,
-                fontWeight: FontWeight.w600)),
+        leading: Icon(
+          icon,
+          color: isLogout ? Colors.redAccent : const Color(0xffD7FD8C),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isLogout ? Colors.redAccent : Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         subtitle: subtitle != null
-            ? Text(subtitle,
-            style: const TextStyle(color: Colors.white70, fontSize: 13))
+            ? Text(
+                subtitle,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              )
             : null,
         trailing: (onTap == null && targetPage == null)
             ? null
-            : const Icon(Icons.arrow_forward_ios,
-            color: Color(0xffD7FD8C), size: 18),
-        onTap: onTap ?? (targetPage != null
-            ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => targetPage))
-            : null),
+            : const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xffD7FD8C),
+                size: 18,
+              ),
+        onTap:
+            onTap ??
+            (targetPage != null
+                ? () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => targetPage),
+                  )
+                : null),
       ),
     );
   }
@@ -289,26 +323,31 @@ class _SettingPageState extends State<SettingPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text('choose_language'.tr(),
-            style: const TextStyle(color: Color(0xffD7FD8C))),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          ListTile(
-            title: const Text("العربية"),
-            onTap: () async {
-              settings.changeLanguage('ar');
-              await context.setLocale(const Locale('ar'));
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            title: const Text("English"),
-            onTap: () async {
-              settings.changeLanguage('en');
-              await context.setLocale(const Locale('en'));
-              Navigator.pop(context);
-            },
-          ),
-        ]),
+        title: Text(
+          'choose_language'.tr(),
+          style: const TextStyle(color: Color(0xffD7FD8C)),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text("العربية"),
+              onTap: () async {
+                settings.changeLanguage('ar');
+                await context.setLocale(const Locale('ar'));
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("English"),
+              onTap: () async {
+                settings.changeLanguage('en');
+                await context.setLocale(const Locale('en'));
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -318,29 +357,37 @@ class _SettingPageState extends State<SettingPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title:
-        Text('logout'.tr(), style: const TextStyle(color: Colors.redAccent)),
+        title: Text(
+          'logout'.tr(),
+          style: const TextStyle(color: Colors.redAccent),
+        ),
         content: Text('logout_confirm'.tr()),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('cancel'.tr(),
-                  style: const TextStyle(color: Color(0xffD7FD8C)))),
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'cancel'.tr(),
+              style: const TextStyle(color: Color(0xffD7FD8C)),
+            ),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               Navigator.pop(context);
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
-              await Supabase.instance.client.auth.signOut();
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                        (route) => false);
-              }
+              await SupabaseAuth().signOut();
+              if (!mounted) return;
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
+              );
             },
-            child: Text('logout'.tr(), style: const TextStyle(color: Colors.white)),
+            child: Text(
+              'logout'.tr(),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -352,8 +399,10 @@ class _SettingPageState extends State<SettingPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text('help_support'.tr(),
-            style: const TextStyle(color: Color(0xffD7FD8C))),
+        title: Text(
+          'help_support'.tr(),
+          style: const TextStyle(color: Color(0xffD7FD8C)),
+        ),
         content: Text(
           'support_content'.tr(),
           textAlign: TextAlign.right,
@@ -361,9 +410,12 @@ class _SettingPageState extends State<SettingPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('close'.tr(),
-                  style: const TextStyle(color: Color(0xffD7FD8C))))
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'close'.tr(),
+              style: const TextStyle(color: Color(0xffD7FD8C)),
+            ),
+          ),
         ],
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:school_app/auth_feature/view/reset_password_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:school_app/auth_feature/view/verification_otp_page.dart';
+import 'package:school_app/auth_feature/service/supabase_auth.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -11,33 +11,35 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final TextEditingController _emailController = TextEditingController(text: "eng.mahmood.anaam@gmail.com");
+  final TextEditingController _emailController = TextEditingController(
+    text: "eng.mahmood.anaam@gmail.com",
+  );
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
 
+  /// Send password-reset OTP to the provided email using SupabaseAuth.
   Future<void> _sendResetOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
     try {
-      await Supabase.instance.client.auth
-          .resetPasswordForEmail(_emailController.text.trim());
+      await SupabaseAuth().sendOtp(_emailController.text.trim());
 
       if (!mounted) return;
+      // Navigate to OTP entry screen; after successful verification
+      // the user will be routed to the reset-password screen.
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResetPasswordPage(email: _emailController.text.trim()),
+          builder: (context) =>
+              VerificationOtpPage(email: _emailController.text.trim()),
         ),
       );
-    } on AuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('unexpected_error'.tr())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -59,7 +61,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           'forget_password'.tr(),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -67,7 +72,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             elevation: 8,
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -76,7 +83,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.lock_reset, size: 64, color: Color(0xff377FCC)),
+                    const Icon(
+                      Icons.lock_reset,
+                      size: 64,
+                      color: Color(0xff377FCC),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'enter_email_instruction'.tr(),
@@ -93,8 +104,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      validator: (value) =>
-                      value == null || value.isEmpty ? 'required'.tr() : null,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'required'.tr()
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -109,17 +121,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                         ),
                         child: _loading
-                            ? const CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
                             : Text(
-                          'send_otp'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                                'send_otp'.tr(),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

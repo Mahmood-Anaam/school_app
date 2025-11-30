@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:school_app/auth_feature/view/driver_signup.dart';
 import 'package:school_app/auth_feature/view/signup_Page.dart';
-import 'package:easy_localization/easy_localization.dart'; // استيراد الحزمة
 
+/// Welcome screen for user role selection.
+/// Allows users to choose between driver or student/parent signup.
 class Welcome extends StatelessWidget {
   const Welcome({super.key});
 
@@ -14,25 +16,32 @@ class Welcome extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ترجمة النص "Welcome to"
+            // Welcome title
             Text(
-              'welcome_to'.tr(), // استخدام tr() للترجمة
-              style: TextStyle(fontSize: 22, color: Theme.of(context).textTheme.bodyLarge!.color),
+              'welcome_to'.tr(),
+              style: TextStyle(
+                fontSize: 22,
+                color: Theme.of(context).textTheme.bodyLarge!.color,
+              ),
             ),
             const SizedBox(height: 5),
-            // ترجمة النص "Hafelati+"
+            // App name
             Text(
-              'hafelati_plus'.tr(), // استخدام tr() للترجمة
-              style: TextStyle(fontSize: 22, color: Theme.of(context).textTheme.bodyLarge!.color),
+              'hafelati_plus'.tr(),
+              style: TextStyle(
+                fontSize: 22,
+                color: Theme.of(context).textTheme.bodyLarge!.color,
+              ),
             ),
+            // Driver icon/image
             SizedBox(
               width: 150,
               height: 150,
               child: Center(
-                child: Image.asset("assets/images/driver.png", scale: 0.1),
+                child: Image.asset('assets/images/driver.png', scale: 0.1),
               ),
             ),
-            // زر مدرسة
+            // Driver signup button
             SizedBox(
               width: 100,
               height: 50,
@@ -46,7 +55,10 @@ class Welcome extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  side: BorderSide(color: Theme.of(context).textTheme.bodyLarge!.color!, width: 2),
+                  side: BorderSide(
+                    color: Theme.of(context).textTheme.bodyLarge!.color!,
+                    width: 2,
+                  ),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -55,7 +67,7 @@ class Welcome extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Driver_button'.tr(), // ترجمة النص "School"
+                  'Driver_button'.tr(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -63,14 +75,15 @@ class Welcome extends StatelessWidget {
                 ),
               ),
             ),
+            // Student/Parent icon/image
             SizedBox(
               width: 150,
               height: 150,
               child: Center(
-                child: Image.asset("assets/images/student.png", scale: 0.1),
+                child: Image.asset('assets/images/student.png', scale: 0.1),
               ),
             ),
-            // زر طالب
+            // Student/Parent signup button
             SizedBox(
               width: 100,
               height: 50,
@@ -82,7 +95,10 @@ class Welcome extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  side: BorderSide(color: Theme.of(context).textTheme.bodyLarge!.color!, width: 2),
+                  side: BorderSide(
+                    color: Theme.of(context).textTheme.bodyLarge!.color!,
+                    width: 2,
+                  ),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -91,7 +107,7 @@ class Welcome extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'student_button'.tr(), // ترجمة النص "Student"
+                  'student_button'.tr(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

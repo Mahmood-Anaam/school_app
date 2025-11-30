@@ -174,11 +174,21 @@
 
   "enter_email_instruction": "Enter your email to receive a reset code.",
   "send_otp": "Send OTP",
-  "enter_otp_instruction": "Enter OTP and your new password",
-  "otp_label": "OTP Code",
-  "invalid_otp_error": "Invalid OTP",
+  "enter_otp": "Verify OTP",
+  "enter_otp_instruction": "Enter the code sent to {0}",
+  "otp_label": "OTP Code (8 digits)",
+  "invalid_otp_error": "Invalid OTP. Please enter a 8-digit code.",
+  "verify_otp": "Verify OTP",
+  "otp_verified": "OTP verified successfully!",
+  "otp_sent": "OTP sent to your email",
+  "didnt_receive_otp": "Didn't receive the code?",
+  "resend_otp": "Resend",
+  "resend_in": "Resend in {0}s",
+  "otp_help_note": "Check your email for the verification code. It may take a few moments to arrive.",
+  "enter_new_password_instruction": "Enter and confirm your new password",
   "reset_password_action": "Reset Password",
   "password_updated_msg": "Password updated successfully",
   "reset_password_title": "Reset Password",
-  "unexpected_error": "Unexpected error occurred"
+  "unexpected_error": "Unexpected error occurred",
+  "login_failed": "Login failed. Please check your credentials."
 }

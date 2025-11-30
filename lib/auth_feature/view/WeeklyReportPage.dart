@@ -1,13 +1,15 @@
-// lib/auth_feature/view/WeeklyReportPage.dart
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:school_app/auth_feature/bloc/bloc/auth_bloc.dart';
 import 'package:school_app/auth_feature/service/supabase_service.dart';
+import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart';
 
+/// Weekly attendance report page.
+///
+/// Shows a student's attendance over the past two weeks (Mon-Fri), including
+/// present days, absences, and late arrivals. Data is fetched from Supabase
+/// fingerprint/face recognition tables and the `student_table` for resolving
+/// the student's display name.
 class WeeklyReportPage extends StatefulWidget {
   const WeeklyReportPage({super.key});
 
@@ -22,6 +24,7 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
   List<Map<String, dynamic>> absentEntries = [];
   List<Map<String, dynamic>> lateEntries = [];
   bool isLoading = true;
+  String studentName = 'Student';
 
   @override
   void initState() {
@@ -30,18 +33,42 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
   }
 
   Future<void> _fetchWeeklyAttendance() async {
-    final authState = context.read<AuthBloc>().state;
-
-    if (authState is! Authanticated || authState.type != 'student') {
+    // Get current signed-in user from SupabaseAuth
+    final user = await SupabaseAuth().getCurrentUser();
+    if (user == null) {
       if (mounted) setState(() => isLoading = false);
       return;
     }
 
-    final studentName = authState.userData?['name'] as String?;
-    if (studentName == null || studentName.isEmpty) {
+    // Determine user type from metadata or database. Only students have weekly reports here.
+    final metaType = (user.userMetadata?['type'] ?? '')
+        .toString()
+        .toLowerCase();
+    if (metaType != 'student') {
       if (mounted) setState(() => isLoading = false);
       return;
     }
+
+    // Try to resolve the student's display name from the student table by email.
+    String? resolvedName;
+    try {
+      final rec = await client
+          .from('student_table')
+          .select('name')
+          .eq('email', user.email!)
+          .maybeSingle();
+      if (rec != null && rec['name'] != null) {
+        resolvedName = rec['name'] as String;
+      }
+    } catch (_) {}
+
+    if (resolvedName == null || resolvedName.isEmpty) {
+      if (mounted) setState(() => isLoading = false);
+      return;
+    }
+
+    // Set the resolved student name for use in the UI
+    studentName = resolvedName;
 
     try {
       final now = DateTime.now();
@@ -67,7 +94,7 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
           .map((e) => DateTime.parse(e['created_at'] as String).toLocal())
           .toList();
 
-      // الأيام المدرسية للأسبوعين الماضيين (الإثنين-الجمعة)
+      // Build the list of school days for the past two weeks (Mon-Fri)
       List<DateTime> schoolDays = [];
       for (int i = 0; i < 14; i++) {
         final day = twoWeeksAgo.add(Duration(days: i));
@@ -76,6 +103,7 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
         }
       }
 
+      // Collect attended days and late arrivals
       Set<DateTime> attendedDaysSet = {};
       List<Map<String, dynamic>> tempLate = [];
 
@@ -93,22 +121,28 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
         }
       }
 
-      // الحضور
+      // Present entries
       presentEntries = attendedDaysSet.map((d) => {'date': d}).toList();
 
-      // التأخير
+      // Late entries (with time)
       lateEntries = tempLate;
 
-      // الغياب
+      // Absences (school days not in attended set)
       absentEntries = schoolDays
           .where((d) => !attendedDaysSet.contains(d))
           .map((d) => {'date': d})
           .toList();
 
-      // ترتيب تنازلي حسب التاريخ
-      presentEntries.sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
-      absentEntries.sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
-      lateEntries.sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
+      // Sort lists in descending order by date
+      presentEntries.sort(
+        (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+      );
+      absentEntries.sort(
+        (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+      );
+      lateEntries.sort(
+        (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+      );
 
       if (mounted) setState(() => isLoading = false);
     } catch (e) {
@@ -123,13 +157,17 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
     return DateFormat(pattern, locale).format(date);
   }
 
-  Widget _buildDayTile(Map<String, dynamic> entry, Color color, {bool isLate = false}) {
+  Widget _buildDayTile(
+    Map<String, dynamic> entry,
+    Color color, {
+    bool isLate = false,
+  }) {
     final day = entry['date'] as DateTime;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.10),   // خلفية ناعمة
+        color: color.withOpacity(0.10), // soft background tint
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withOpacity(0.35), width: 1.4),
       ),
@@ -137,7 +175,7 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
         children: [
           Icon(
             isLate ? Icons.access_time_filled : Icons.check_circle,
-            color: color,                 // رمز الساعة/الحضور باللون الجديد
+            color: color, // time/check icon tinted by the provided color
             size: 28,
           ),
           const SizedBox(width: 12),
@@ -147,7 +185,7 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
-                color: Colors.black,       // النص واضح على الخلفية
+                color: Colors.black, // clear readable text on the card
               ),
             ),
           ),
@@ -156,23 +194,30 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
     );
   }
 
-
   Widget _buildStatCard(String label, int count, Color color) {
     return Column(
       children: [
-        Text('$count', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         const SizedBox(height: 6),
-        Text(label, style: TextStyle(fontSize: 16, color: color.withOpacity(0.9))),
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, color: color.withOpacity(0.9)),
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final studentName = (authState is Authanticated && authState.userData != null)
-        ? authState.userData!['name'] ?? 'Student'
-        : 'Student';
+    // Use the resolved `studentName` set when loading attendance
+    final studentName = this.studentName;
 
     return Scaffold(
       appBar: AppBar(
@@ -184,102 +229,142 @@ class _WeeklyReportPageState extends State<WeeklyReportPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // بطاقة ملخص الأسبوع
-            Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                child: Column(
-                  children: [
-                  CircleAvatar(
-                  radius: 42,
-                  backgroundColor: Colors.blueAccent.withOpacity(0.15),
-                  child: Icon(
-                    Icons.school,
-                    size: 50,
-                    color: Colors.blueAccent,   // لون القبعة
-                  ),),
-                    const SizedBox(height: 16),
-
-                    Text(
-                      studentName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,   // لون الاسم
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Weekly summary card
+                  Card(
+                    elevation: 10,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 30,
+                        horizontal: 20,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 25),
-                    // ----- بطاقات الإحصائيات -----
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 42,
+                            backgroundColor: Colors.blueAccent.withOpacity(
+                              0.15,
+                            ),
+                            child: Icon(
+                              Icons.school,
+                              size: 50,
+                              color: Colors.blueAccent, // school icon color
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatCard('present'.tr(), presentEntries.length, Colors.lime),
-                        _buildStatCard('absent'.tr(), absentEntries.length, Colors.red),
-                      ],
+                          Text(
+                            studentName,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueAccent, // name color
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 25),
+
+                          // ----- Statistics cards -----
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildStatCard(
+                                'present'.tr(),
+                                presentEntries.length,
+                                Colors.lime,
+                              ),
+                              _buildStatCard(
+                                'absent'.tr(),
+                                absentEntries.length,
+                                Colors.red,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // Present days
+                  if (presentEntries.isNotEmpty) ...[
+                    Text(
+                      'present_days'.tr(),
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...presentEntries.map((e) {
+                      final isLate = lateEntries.any((l) {
+                        final lateDate = l['date'] as DateTime?;
+                        final entryDate = e['date'] as DateTime?;
+                        return lateDate != null &&
+                            entryDate != null &&
+                            lateDate.isAtSameMomentAs(entryDate);
+                      });
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _buildDayTile(e, Colors.lime, isLate: isLate),
+                      );
+                    }).toList(),
                   ],
-                ),
+
+                  // Absent days (same style used in driver page)
+                  if (absentEntries.isNotEmpty) ...[
+                    const SizedBox(height: 25),
+                    Text(
+                      'absent_days'.tr(),
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...absentEntries
+                        .map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _buildDayTile(e, Colors.red),
+                          ),
+                        )
+                        .toList(),
+                  ],
+
+                  if (presentEntries.isEmpty && absentEntries.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 60),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.event_busy,
+                              size: 80,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'no_data_this_week'.tr(),
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 25),
-
-            // الأيام الحاضرة
-            if (presentEntries.isNotEmpty) ...[
-              Text('present_days'.tr(),
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              ...presentEntries.map((e) {
-                final isLate = lateEntries.any((l) {
-                  final lateDate = l['date'] as DateTime?;
-                  final entryDate = e['date'] as DateTime?;
-                  return lateDate != null &&
-                      entryDate != null &&
-                      lateDate.isAtSameMomentAs(entryDate);
-                });
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _buildDayTile(e, Colors.lime, isLate: isLate),
-                );
-              }).toList(),
-            ],
-
-            // الأيام الغائبة بنفس ستايل صفحة السائق
-            if (absentEntries.isNotEmpty) ...[
-              const SizedBox(height: 25),
-              Text('absent_days'.tr(),
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              ...absentEntries.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _buildDayTile(e, Colors.red),
-              )).toList(),
-            ],
-
-            if (presentEntries.isEmpty && absentEntries.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 60),
-                  child: Column(
-                    children: [
-                      Icon(Icons.event_busy, size: 80, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text('no_data_this_week'.tr(),
-                          style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -238,11 +238,21 @@
 
   "enter_email_instruction": "أدخل بريدك الإلكتروني لتلقي رمز إعادة التعيين.",
   "send_otp": "إرسال الرمز",
-  "enter_otp_instruction": "أدخل الرمز وكلمة المرور الجديدة",
-  "otp_label": "رمز التحقق",
-  "invalid_otp_error": "رمز غير صحيح",
+  "enter_otp": "التحقق من الرمز",
+  "enter_otp_instruction": "أدخل الرمز المرسل إلى {0}",
+  "otp_label": "رمز التحقق (8 أرقام)",
+  "invalid_otp_error": "رمز غير صحيح. يرجى إدخال رمز مكون من 8 أرقام.",
+  "verify_otp": "التحقق من الرمز",
+  "otp_verified": "تم التحقق من الرمز بنجاح!",
+  "otp_sent": "تم إرسال الرمز إلى بريدك الإلكتروني",
+  "didnt_receive_otp": "لم تتلقَ الرمز؟",
+  "resend_otp": "إعادة الإرسال",
+  "resend_in": "إعادة الإرسال في {0} ثانية",
+  "otp_help_note": "تحقق من بريدك الإلكتروني للحصول على رمز التحقق. قد يستغرق وصوله بعض الوقت.",
+  "enter_new_password_instruction": "أدخل وأكد كلمة المرور الجديدة",
   "reset_password_action": "إعادة تعيين كلمة المرور",
   "password_updated_msg": "تم تحديث كلمة المرور بنجاح",
   "reset_password_title": "إعادة تعيين كلمة المرور",
-  "unexpected_error": "حدث خطأ غير متوقع"
+  "unexpected_error": "حدث خطأ غير متوقع",
+  "login_failed": "فشل تسجيل الدخول. يرجى التحقق من بيانات اعتمادك."
 }

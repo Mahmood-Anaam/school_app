@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:school_app/auth_feature/service/supabase_auth.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -35,14 +35,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('email');
-    final type = prefs.getString('type') ?? 'student';
+    // Get the current user from the SupabaseAuth singleton
+    final currentUser = await SupabaseAuth().getCurrentUser();
 
-    if (email == null) {
-      setState(() => _isLoading = false);
+    if (currentUser == null || currentUser.email == null) {
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
+
+    final email = currentUser.email!;
+    final metadata = currentUser.userMetadata ?? <String, dynamic>{};
+    final type = (metadata['type'] as String?) ?? 'student';
 
     _userType = type;
     final table = type == 'driver' ? 'driver_table' : 'student_table';
@@ -114,7 +117,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('error_occurred'.tr() + ': $e'),
+          content: Text('${'error_occurred'.tr()}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -135,195 +138,250 @@ class _EditProfilePageState extends State<EditProfilePage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'name'.tr(),
-                    labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                    filled: true,
-                    fillColor: const Color(0xff135FCB),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextField(
+                        controller: nameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'name'.tr(),
+                          labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
+                          filled: true,
+                          fillColor: const Color(0xff135FCB),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: phoneController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'phone'.tr(),
+                          labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
+                          filled: true,
+                          fillColor: const Color(0xff135FCB),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: emailController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'email'.tr(),
+                          labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
+                          filled: true,
+                          fillColor: const Color(0xff135FCB),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (_userType == 'driver')
+                        TextField(
+                          controller: licenseController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'license_number'.tr(),
+                            labelStyle: const TextStyle(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      if (_userType == 'student') ...[
+                        TextField(
+                          controller: gradeController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'grade'.tr(),
+                            labelStyle: const TextStyle(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: ageController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'age'.tr(),
+                            labelStyle: const TextStyle(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: addressController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'address'.tr(),
+                            labelStyle: const TextStyle(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: conditionController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'condition'.tr(),
+                            labelStyle: const TextStyle(
+                              color: Color(0xffD7FD8C),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff135FCB),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Color(0xffD7FD8C),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _updateProfile,
+                          style: ElevatedButton.styleFrom(
+                            side: const BorderSide(
+                              color: Color(0xffD7FD8C),
+                              width: 2,
+                            ),
+                            backgroundColor: const Color(0xff135FCB),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(
+                              0xff135FCB,
+                            ).withOpacity(0.6),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'save_changes'.tr(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xffD7FD8C),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: phoneController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'phone'.tr(),
-                    labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                    filled: true,
-                    fillColor: const Color(0xff135FCB),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: emailController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'email'.tr(),
-                    labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                    filled: true,
-                    fillColor: const Color(0xff135FCB),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (_userType == 'driver')
-                  TextField(
-                    controller: licenseController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'license_number'.tr(),
-                      labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                if (_userType == 'student') ...[
-                  TextField(
-                    controller: gradeController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'grade'.tr(),
-                      labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: ageController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'age'.tr(),
-                      labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: addressController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'address'.tr(),
-                      labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: conditionController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'condition'.tr(),
-                      labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
-                      filled: true,
-                      fillColor: const Color(0xff135FCB),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _updateProfile,
-                    style: ElevatedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xffD7FD8C), width: 2),
-                      backgroundColor: const Color(0xff135FCB),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'save_changes'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xffD7FD8C),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

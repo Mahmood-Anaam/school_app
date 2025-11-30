@@ -6,7 +6,9 @@ class SupabaseService {
 
   SupabaseClient get client {
     if (_client == null) {
-      throw Exception("Supabase not initialized. Call initialize() in main.dart");
+      throw Exception(
+        "Supabase not initialized. Call initialize() in main.dart",
+      );
     }
     return _client!;
   }
@@ -26,18 +28,16 @@ class SupabaseService {
   void subscribeSeats(Function(Map<String, dynamic>) onChange) {
     final client = _client!;
 
-    client.channel('realtime:Seats')
+    client
+        .channel('realtime:Seats')
         .onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'Seats',
-      callback: (payload) {
-        if (payload.newRecord != null) {
-          onChange(Map<String, dynamic>.from(payload.newRecord!));
-        }
-      },
-    )
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'Seats',
+          callback: (payload) {
+            onChange(Map<String, dynamic>.from(payload.newRecord));
+          },
+        )
         .subscribe();
   }
-
 }
