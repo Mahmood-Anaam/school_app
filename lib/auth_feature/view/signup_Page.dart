@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/Home_Page.dart';
 
-/// Parent/Student signup screen.
-/// Collects parent information and creates a new account using Supabase.
+/// Parent/Student signup screen with professional styling and RTL/LTR support.
 class ParentSignUpPage extends StatefulWidget {
   const ParentSignUpPage({super.key});
 
@@ -13,16 +13,18 @@ class ParentSignUpPage extends StatefulWidget {
 }
 
 class _ParentSignUpPageState extends State<ParentSignUpPage> {
-  final TextEditingController nameController = TextEditingController(text: "Mahmood Anaam");
-  final TextEditingController phoneController = TextEditingController(text: "01090000000");
-  final TextEditingController emailController = TextEditingController(text: "eng.mahmood.anaam@gmail.com");
-  final TextEditingController passwordController = TextEditingController(text: "123456");
-  final TextEditingController gradeController = TextEditingController(text: "5");
-  final TextEditingController ageController = TextEditingController(text: "10");
-  final TextEditingController addressController = TextEditingController(text: "taiz");
-  final TextEditingController conditionController = TextEditingController(text: "good");
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController gradeController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController conditionController = TextEditingController();
 
   bool _isLoading = false;
+  bool _hidePassword = true;
 
   @override
   void dispose() {
@@ -37,15 +39,10 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
     super.dispose();
   }
 
-  /// Perform student signup using Supabase.
   Future<void> _signUp() async {
-    if (!_validateInputs()) {
-      _showErrorSnackBar('${'error_occurred'.tr()}: Invalid input');
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-
     try {
       final email = emailController.text.trim();
       final password = passwordController.text.trim();
@@ -56,7 +53,6 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
       final address = addressController.text.trim();
       final condition = conditionController.text.trim();
 
-      // Signup with Supabase Auth
       await SupabaseAuth().signUpWithEmailPassword(
         email,
         password,
@@ -74,174 +70,232 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
       );
 
       if (!mounted) return;
-
-      _showSuccessSnackBar('account_created'.tr());
-
-      // Navigate to home after successful signup
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('account_created'.tr()),
+          backgroundColor: Colors.green,
+        ),
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } catch (e) {
       if (!mounted) return;
-      _showErrorSnackBar('${'error_occurred'.tr()}: ${e.toString()}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${'error_occurred'.tr()}: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  /// Validate all required input fields.
-  bool _validateInputs() {
-    return nameController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty &&
-        emailController.text.isNotEmpty &&
-        passwordController.text.isNotEmpty &&
-        gradeController.text.isNotEmpty &&
-        ageController.text.isNotEmpty &&
-        addressController.text.isNotEmpty &&
-        conditionController.text.isNotEmpty;
-  }
-
-  /// Show success message using SnackBar.
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
-  }
-
-  /// Show error message using SnackBar.
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // App logo
-                SizedBox(
-                  width: 150,
-                  height: 150,
-                  child: Center(
-                    child: Image.asset('assets/images/shcool_logo.png'),
-                  ),
+    final isRtl = context.locale.languageCode == 'ar';
+
+    return Directionality(
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xff0D47A1), Color(0xff1976D2), Color(0xff63A4FF)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                const SizedBox(height: 10),
-                // Full name field
-                _buildTextField(
-                  controller: nameController,
-                  label: 'full_name'.tr(),
-                ),
-                const SizedBox(height: 20),
-                // Phone number field
-                _buildTextField(
-                  controller: phoneController,
-                  label: 'phone_number'.tr(),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 20),
-                // Email field
-                _buildTextField(
-                  controller: emailController,
-                  label: 'email'.tr(),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 20),
-                // Password field
-                _buildTextField(
-                  controller: passwordController,
-                  label: 'password'.tr(),
-                  isPassword: true,
-                ),
-                const SizedBox(height: 20),
-                // Grade field
-                _buildTextField(
-                  controller: gradeController,
-                  label: 'grade'.tr(),
-                ),
-                const SizedBox(height: 20),
-                // Age field
-                _buildTextField(controller: ageController, label: 'age'.tr()),
-                const SizedBox(height: 20),
-                // Address field
-                _buildTextField(
-                  controller: addressController,
-                  label: 'address'.tr(),
-                ),
-                const SizedBox(height: 20),
-                // Health condition field
-                _buildTextField(
-                  controller: conditionController,
-                  label: 'condition'.tr(),
-                ),
-                const SizedBox(height: 30),
-                // Sign-up button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _signUp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff135FCB),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 50,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                elevation: 10,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 90,
+                                width: 90,
+                                child: Image.asset('assets/images/shcool_logo.png'),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'sign_up'.tr(),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xff0D47A1),
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'register'.tr(),
+                                style: TextStyle(color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildField(
+                          controller: nameController,
+                          label: 'full_name'.tr(),
+                          icon: Icons.person_outline,
+                          isRtl: isRtl,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'required'.tr() : null,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildField(
+                          controller: phoneController,
+                          label: 'phone_number'.tr(),
+                          icon: Icons.phone_outlined,
+                          isRtl: isRtl,
+                          keyboardType: TextInputType.phone,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'required'.tr() : null,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildField(
+                          controller: emailController,
+                          label: 'email'.tr(),
+                          icon: Icons.email_outlined,
+                          isRtl: isRtl,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'required'.tr();
+                            if (!v.contains('@')) return 'invalid_email'.tr();
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        _buildField(
+                          controller: passwordController,
+                          label: 'password'.tr(),
+                          icon: Icons.lock_outline,
+                          isPassword: _hidePassword,
+                          isRtl: isRtl,
+                          keyboardType: TextInputType.visiblePassword,
+                          validator: (v) =>
+                              v != null && v.length >= 6
+                                  ? null
+                                  : 'password_min_6'.tr(),
+                          onSuffixTap: () =>
+                              setState(() => _hidePassword = !_hidePassword),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildField(
+                                controller: gradeController,
+                                label: 'grade'.tr(),
+                                icon: Icons.school_outlined,
+                                isRtl: isRtl,
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'required'.tr()
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildField(
+                                controller: ageController,
+                                label: 'age'.tr(),
+                                icon: Icons.cake_outlined,
+                                isRtl: isRtl,
+                                keyboardType: TextInputType.number,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'required'.tr()
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        _buildField(
+                          controller: addressController,
+                          label: 'address'.tr(),
+                          icon: Icons.location_on_outlined,
+                          isRtl: isRtl,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'required'.tr() : null,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildField(
+                          controller: conditionController,
+                          label: 'condition'.tr(),
+                          icon: Icons.health_and_safety_outlined,
+                          isRtl: isRtl,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'required'.tr() : null,
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _signUp,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xff0D47A1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    'register'.tr(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Align(
+                          alignment: Alignment.center,
+                          child: TextButton(
+                            onPressed: _isLoading ? null : () => Navigator.pop(context),
+                            child: Text(
+                              'login_here'.tr(),
+                              style: const TextStyle(color: Color(0xff0D47A1)),
                             ),
                           ),
-                        )
-                      : Text(
-                          'register'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
                         ),
-                ),
-                const SizedBox(height: 30),
-                // Login link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'already_registered'.tr(),
-                      style: const TextStyle(color: Color(0xffD7FD8C)),
+                      ],
                     ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Text(
-                        'login_here'.tr(),
-                        style: const TextStyle(
-                          color: Color(0xffD7FD8C),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -249,31 +303,48 @@ class _ParentSignUpPageState extends State<ParentSignUpPage> {
     );
   }
 
-  /// Build a reusable text input field.
-  Widget _buildTextField({
+  Widget _buildField({
     required TextEditingController controller,
     required String label,
-    bool isPassword = false,
+    required IconData icon,
+    required bool isRtl,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+    bool isPassword = false,
+    VoidCallback? onSuffixTap,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      textAlign: isRtl ? TextAlign.right : TextAlign.left,
       obscureText: isPassword,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      validator: validator,
       decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: const Color(0xff0D47A1)),
+        suffixIcon: onSuffixTap != null
+            ? IconButton(
+                icon: Icon(
+                  isPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                ),
+                onPressed: onSuffixTap,
+              )
+            : null,
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
         filled: true,
-        fillColor: const Color(0xff135FCB),
+        fillColor: const Color(0xffF5F7FB),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xff0D47A1)),
+        ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xffC5CAE9)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xff0D47A1), width: 1.5),
         ),
+        labelStyle: const TextStyle(color: Color(0xff0D47A1)),
       ),
     );
   }

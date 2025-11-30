@@ -16,6 +16,7 @@
   "phone_number": "Phone Number",
   "driver_license": "Driver License Number",
   "email": "Email",
+  "invalid_email": "Please enter a valid email address",
   "password": "Password",
   "register": "Register",
   "already_registered": "Already registered?",
