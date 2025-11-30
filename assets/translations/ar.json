@@ -239,7 +239,7 @@
   "enter_email_instruction": "أدخل بريدك الإلكتروني لتلقي رمز إعادة التعيين.",
   "send_otp": "إرسال الرمز",
   "enter_otp": "التحقق من الرمز",
-  "enter_otp_instruction": "أدخل الرمز المرسل إلى {0}",
+  "enter_otp_instruction": "أدخل الرمز المرسل إلى ",
   "otp_label": "رمز التحقق (8 أرقام)",
   "invalid_otp_error": "رمز غير صحيح. يرجى إدخال رمز مكون من 8 أرقام.",
   "verify_otp": "التحقق من الرمز",

@@ -175,7 +175,7 @@
   "enter_email_instruction": "Enter your email to receive a reset code.",
   "send_otp": "Send OTP",
   "enter_otp": "Verify OTP",
-  "enter_otp_instruction": "Enter the code sent to {0}",
+  "enter_otp_instruction": "Enter the code sent to ",
   "otp_label": "OTP Code (8 digits)",
   "invalid_otp_error": "Invalid OTP. Please enter a 8-digit code.",
   "verify_otp": "Verify OTP",

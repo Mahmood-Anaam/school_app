@@ -241,7 +241,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'enter_otp_instruction'.tr(args: [widget.email]),
+                    'enter_otp_instruction'.tr() + widget.email,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
@@ -361,7 +361,7 @@ class _VerificationOtpPageState extends State<VerificationOtpPage> {
                           ? ui.TextDirection.rtl
                           : ui.TextDirection.ltr,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 3),
                     TextButton(
                       onPressed: _canResend ? _resendOtp : null,
                       child: Text(
