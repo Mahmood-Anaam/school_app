@@ -1,10 +1,9 @@
+// lib/auth_feature/view/driver_signup.dart
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:school_app/auth_feature/service/supabase_auth.dart';
 import 'package:school_app/auth_feature/view/Home_Page.dart';
 
-/// Bus driver signup screen.
-/// Collects driver information and creates a new account using Supabase.
 class BusDriverSignUpPage extends StatefulWidget {
   const BusDriverSignUpPage({super.key});
 
@@ -13,23 +12,15 @@ class BusDriverSignUpPage extends StatefulWidget {
 }
 
 class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
-  final TextEditingController nameController = TextEditingController(
-    text: "Mahmoud Alsharabi",
-  );
-  final TextEditingController phoneController = TextEditingController(
-    text: "01090000001",
-  );
-  final TextEditingController licenseController = TextEditingController(
-    text: "123456789",
-  );
-  final TextEditingController emailController = TextEditingController(
-    text: "eng.mahmoud.alsharabi@gmail.com",
-  );
-  final TextEditingController passwordController = TextEditingController(
-    text: "123456",
-  );
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController licenseController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -41,12 +32,8 @@ class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
     super.dispose();
   }
 
-  /// Perform driver signup using Supabase.
   Future<void> _signUp() async {
-    if (!_validateInputs()) {
-      _showErrorSnackBar('${'error_occurred'.tr()}: Invalid input');
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
@@ -57,7 +44,6 @@ class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
       final phone = phoneController.text.trim();
       final license = licenseController.text.trim();
 
-      // Signup with Supabase Auth
       await SupabaseAuth().signUpWithEmailPassword(
         email,
         password,
@@ -73,142 +59,304 @@ class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
 
       if (!mounted) return;
 
-      _showSuccessSnackBar('account_created'.tr());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('account_created'.tr()),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
 
-      // Navigate to home after successful signup
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } catch (e) {
       if (!mounted) return;
-      _showErrorSnackBar('${'error_occurred'.tr()}: ${e.toString()}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text(e.toString())),
+            ],
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  /// Validate all required input fields.
-  bool _validateInputs() {
-    return nameController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty &&
-        licenseController.text.isNotEmpty &&
-        emailController.text.isNotEmpty &&
-        passwordController.text.isNotEmpty;
-  }
-
-  /// Show success message using SnackBar.
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
-  }
-
-  /// Show error message using SnackBar.
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isRTL = context.locale.languageCode == 'ar';
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Center(
-          child: SingleChildScrollView(
+      backgroundColor: const Color(0xff377FCC),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            isRTL ? Icons.arrow_forward : Icons.arrow_back,
+            color: const Color(0xffD7FD8C),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Driver_button'.tr(),
+          style: const TextStyle(
+            color: Color(0xffD7FD8C),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
             child: Column(
               children: [
-                // App logo
-                SizedBox(
-                  width: 150,
-                  height: 150,
-                  child: Center(
-                    child: Image.asset('assets/images/shcool_logo.png'),
+                // Logo
+                Hero(
+                  tag: 'app_logo',
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xffD7FD8C).withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/shcool_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                // Full name field
+
+                const SizedBox(height: 40),
+
+                // Full Name
                 _buildTextField(
                   controller: nameController,
                   label: 'full_name'.tr(),
+                  icon: Icons.person_outline,
+                  isRTL: isRTL,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'name_required'.tr();
+                    }
+                    return null;
+                  },
                 ),
+
                 const SizedBox(height: 20),
-                // Phone number field
+
+                // Phone Number
                 _buildTextField(
                   controller: phoneController,
                   label: 'phone_number'.tr(),
+                  icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
+                  isRTL: isRTL,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'valid_phone_required'.tr();
+                    }
+                    return null;
+                  },
                 ),
+
                 const SizedBox(height: 20),
-                // Driver license field
+
+                // Driver License
                 _buildTextField(
                   controller: licenseController,
                   label: 'driver_license'.tr(),
+                  icon: Icons.badge_outlined,
+                  isRTL: isRTL,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'license_required'.tr();
+                    }
+                    return null;
+                  },
                 ),
+
                 const SizedBox(height: 20),
-                // Email field
+
+                // Email
                 _buildTextField(
                   controller: emailController,
                   label: 'email'.tr(),
+                  icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
+                  isRTL: isRTL,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'required'.tr();
+                    }
+                    if (!value.contains('@')) {
+                      return 'valid_phone_required'.tr();
+                    }
+                    return null;
+                  },
                 ),
+
                 const SizedBox(height: 20),
-                // Password field
-                _buildTextField(
+
+                // Password
+                TextFormField(
                   controller: passwordController,
-                  label: 'password'.tr(),
-                  isPassword: true,
-                ),
-                const SizedBox(height: 30),
-                // Sign-up button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _signUp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff135FCB),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 50,
+                  obscureText: _obscurePassword,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: 'password'.tr(),
+                    labelStyle: const TextStyle(
+                      color: Color(0xffD7FD8C),
+                      fontSize: 16,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.white),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Color(0xffD7FD8C),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: const Color(0xffD7FD8C),
+                      ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xff135FCB),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Color(0xffD7FD8C),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Color(0xffD7FD8C),
+                        width: 2.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.redAccent,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.redAccent,
+                        width: 2.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
                     ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'required'.tr();
+                    }
+                    if (value.length < 6) {
+                      return 'password_min_6'.tr();
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 40),
+
+                // Sign Up Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _signUp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff135FCB),
+                      foregroundColor: const Color(0xffD7FD8C),
+                      disabledBackgroundColor: const Color(0xff135FCB).withOpacity(0.6),
+                      elevation: 8,
+                      shadowColor: const Color(0xffD7FD8C).withOpacity(0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(
+                          color: Color(0xffD7FD8C),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xffD7FD8C),
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'register'.tr(),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                        )
-                      : Text(
-                          'register'.tr(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  ),
                 ),
-                const SizedBox(height: 30),
-                // Login link
+
+                const SizedBox(height: 24),
+
+                // Login Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'already_registered'.tr(),
-                      style: const TextStyle(color: Color(0xffD7FD8C)),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(
@@ -216,11 +364,15 @@ class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
                         style: const TextStyle(
                           color: Color(0xffD7FD8C),
                           fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -229,32 +381,65 @@ class _BusDriverSignUpPageState extends State<BusDriverSignUpPage> {
     );
   }
 
-  /// Build a reusable text input field.
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    bool isPassword = false,
+    required IconData icon,
+    required bool isRTL,
     TextInputType keyboardType = TextInputType.text,
+    TextDirection? textDirection,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
-      obscureText: isPassword,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xffD7FD8C)),
+        labelStyle: const TextStyle(
+          color: Color(0xffD7FD8C),
+          fontSize: 16,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xffD7FD8C),
+        ),
         filled: true,
         fillColor: const Color(0xff135FCB),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            color: Color(0xffD7FD8C),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xffD7FD8C)),
-          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            color: Color(0xffD7FD8C),
+            width: 2.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 2.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
         ),
       ),
+      validator: validator,
     );
   }
 }
